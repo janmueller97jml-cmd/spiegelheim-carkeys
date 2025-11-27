@@ -1,0 +1,2 @@
+ALTER TABLE `owned_vehicles`
+	ADD COLUMN `lockID` VARCHAR(16) DEFAULT NULL;
