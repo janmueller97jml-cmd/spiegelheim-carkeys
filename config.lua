@@ -250,32 +250,10 @@ Config.Blacklist = {
     }
 }
 
-Config.WhitelistVehicles = { -- vehicles that dont need any key and can be used by anyone
-    allowLocking = false, -- if you want users to be able to lock the vehicle ( would be useless as anyone can lock and unlock )
-    models = {
-        `ambulance`,
-    },
-    plates = {
-        'ABC 123'
-    }
-}
+-- Job-Based Vehicle Ownership
+-- If enabled, vehicles whose 'owner' column in the database matches a player's job name
+-- will be keyless for that player (can lock/unlock and toggle engine without a key item)
+Config.JobOwnerIsKeyless = true
 
--- Vehicles that dont need any key. Usefull for jobs
-Config.JobVehicles = {
-    ['cardealer'] = {
-        models = {
-        },
-        plates = {
-            'CADEALER'
-        }
-    },
-    -- ['ambulance'] = {
-    --     models = {
-    --         `ambulance`,
-    --         `emscharger`
-    --     },
-    --     plates = {
-    --         'ABC 123'
-    --     }
-    -- }
-}
+-- The column name in the database that stores the vehicle owner (player identifier or job name)
+Config.JobOwnerColumnName = 'owner'
