@@ -299,31 +299,7 @@ function checkLockPossibility(vehicle, lockedStatus, lockpick)
             
         if Config.LockBlacklist.vehicleClasses[vehicleClass] == false or Config.LockBlacklist.vehicleModels[vehicleModel] == false then
 
-            if IsWhitelistVehicle(data.vehicleProps.plate, vehicleModel) and Config.WhitelistVehicles.allowLocking then
-                if NetworkHasControlOfEntity(data.vehicle) then
-                    lockVehicle(data.vehicle, lockedStatus)
-                else
-                    TriggerServerEvent("mx_carkeys:server:lockVehicle", NetworkGetNetworkIdFromEntity(data.vehicle), lockedStatus)
-                end
-
-                TriggerServerEvent("mx_carkeys:server:vehicleEffects", NetworkGetNetworkIdFromEntity(data.vehicle), lockedStatus)
-    
-                if not IsPedInAnyVehicle(playerPed) then
-                    lockAnimation()
-                end
-
-                vehicleAlarm(data.vehicle, false)
-    
-                if lockedStatus then
-                    Notify.Send('Car Key', Translate('vehicle_locked'), 3000, Notify.Type['vehicle_locked'])
-                else
-                    Notify.Send('Car Key', Translate('vehicle_unlocked'), 3000, Notify.Type['vehicle_unlocked'])
-                end
-
-                if Config.AdvancedParking.enabled then
-                    exports[Config.AdvancedParking.resourceName]:UpdateVehicle(data.vehicle)
-                end
-            elseif IsJobVehicle(playerJob.name, data.vehicleProps.plate, vehicleModel) then
+            if IsJobOwnedVehicle(data) then
                 if NetworkHasControlOfEntity(data.vehicle) then
                     lockVehicle(data.vehicle, lockedStatus)
                 else
@@ -425,7 +401,7 @@ function toggleTrunk(slots)
                 if data.vehicleProps.plate:gsub("^%s*(.-)%s*$", "%1"):upper() == data.metadata.carKeysPlate:gsub("^%s*(.-)%s*$", "%1"):upper() then
                     local isKeyValid, playerJob = lib.callback.await('mx_carkeys:callback:checkIsKeyValid', false, data) 
 
-                    if IsJobVehicle(playerJob.name, data.vehicleProps.plate, vehicleModel) then
+                    if IsJobOwnedVehicle(data) then
                         lockAnimation()
 
                         if trunkStatus[data.vehicle] then
@@ -459,48 +435,15 @@ function toggleTrunk(slots)
 end
 exports('toggleTrunk', toggleTrunk)
 
--- check if the vehicle is in Config.WhitelistVehicles
-function IsWhitelistVehicle(plate, model)
-    for index, models in ipairs(Config.WhitelistVehicles.models) do
-        if models == model then
-            return true
-        end
-    end
-    
-    for index, plates in ipairs(Config.WhitelistVehicles.plates) do
-        local plates = plates:upper()
-
-        if plate:find(plates) then
-            return true
-        end
-    end
-
-    return false
-end
-
--- check if the vehicle is in Config.JobVehicles 
-function IsJobVehicle(playerJob, plate, model)
-    local jobVehicles = Config.JobVehicles[playerJob]
-    
-    if jobVehicles == nil then
+-- check if the vehicle is job-owned (owner column matches player's job name)
+-- This calls the server to check the database
+function IsJobOwnedVehicle(data)
+    if not Config.JobOwnerIsKeyless then
         return false
     end
-
-    for index, models in ipairs(jobVehicles.models) do
-        if models == model then
-            return true
-        end
-    end
     
-    for index, plates in ipairs(jobVehicles.plates) do
-        local plates = plates:upper()
-
-        if plate:find(plates) then
-            return true
-        end
-    end
-
-    return false
+    local isJobOwned = lib.callback.await('mx_carkeys:callback:isJobOwnedVehicle', false, data)
+    return isJobOwned
 end
 
 function vehicleAlarm(vehicle, boolean)

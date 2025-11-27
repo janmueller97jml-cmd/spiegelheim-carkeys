@@ -19,13 +19,6 @@ RegisterCommand(Config.EngineCommand, function(source, args, Rawcommand)
                 return
             end
         end
-    
-        if IsWhitelistVehicle(vehicleProps.plate, vehicleModel) then
-            if vehicle ~= 0 and IsPedInAnyVehicle(playerPed, false) then
-                toggleEngine(vehicle)
-                return
-            end
-        end
         
         if Config.ToggleEngineKeyOnly then
             if vehicle ~= 0 and IsPedInAnyVehicle(playerPed, false) then
@@ -50,7 +43,7 @@ function isToggleEngineValid(vehicle)
     
     local isKeyValid, playerJob = lib.callback.await('mx_carkeys:callback:checkIsKeyValid', false, data) 
 
-    if IsJobVehicle(playerJob.name, data.vehicleProps.plate, vehicleModel) then
+    if IsJobOwnedVehicle(data) then
         toggleEngine(data.vehicle)
     elseif isKeyValid then
         toggleEngine(data.vehicle)
@@ -192,7 +185,7 @@ function itemToggleEngine(slots)
                 if data.vehicleProps.plate == data.metadata.carKeysPlate then
                     local isKeyValid, playerJob = lib.callback.await('mx_carkeys:callback:checkIsKeyValid', false, data) 
     
-                    if IsJobVehicle(playerJob.name, data.vehicleProps.plate, vehicleModel) then
+                    if IsJobOwnedVehicle(data) then
                         lockAnimation()
     
                         toggleEngine(data.vehicle)

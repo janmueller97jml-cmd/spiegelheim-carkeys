@@ -14,9 +14,13 @@ mx_carkeys is dependend on **[ESX Legacy](https://github.com/esx-framework/esx-l
 - Each Vehicle and Key has a Unique Lock ID, that way it recognizes the correct key for each individual vehicle.
 - Each Lock can be changed without having to change the plate thanks to the LockID
 
-### Whitelist
+### Job-Based Vehicle Ownership (Keyless Access)
 
-- if you have jobs like the LSPD who should access every police vehicle they have without a key then there is a whitelist for that
+- Vehicles whose `owner` column in the database matches a player's job name are automatically keyless for that player
+- Players with matching jobs can lock/unlock and toggle engine on/off without needing a physical key item
+- Enable/disable with `Config.JobOwnerIsKeyless` (default: true)
+- Configure the owner column name with `Config.JobOwnerColumnName` (default: 'owner')
+- Example: A vehicle with `owner = 'police'` in `owned_vehicles` will be keyless for all players with job name 'police'
 
 ### Blacklist
 
@@ -34,6 +38,14 @@ mx_carkeys is dependend on **[ESX Legacy](https://github.com/esx-framework/esx-l
 - the Locksmith can change the Lock but also can re create a key for you
 
 ## Changelog
+
+Version 1.11.0
+   - Replaced model/plate-based job and whitelist vehicle configuration with database-based job ownership
+   - Removed `Config.JobVehicles` and `Config.WhitelistVehicles`
+   - Added `Config.JobOwnerIsKeyless` to enable/disable job-based keyless access (default: true)
+   - Added `Config.JobOwnerColumnName` to configure the owner column name (default: 'owner')
+   - Vehicles with owner matching player's job name are now automatically keyless
+   - Players with matching job can lock/unlock and toggle engine without a key item
 
 Version 1.10.4
    - fixed script not working with some specific licenseplate formats

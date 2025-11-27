@@ -245,6 +245,45 @@ lib.callback.register('mx_carkeys:callback:checkIsKeyValid', function(src, data)
     return keyIsValid or false, playerJob
 end)
 
+-- Check if a vehicle is job-owned (owner column matches player's job name)
+lib.callback.register('mx_carkeys:callback:isJobOwnedVehicle', function(src, data)
+    if not Config.JobOwnerIsKeyless then
+        return false
+    end
+
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local playerJob = xPlayer.getJob()
+    local trimmedPlate = data.vehicleProps.plate:gsub("^%s*(.-)%s*$", "%1"):upper()
+    local ownerColumn = Config.JobOwnerColumnName or 'owner'
+
+    -- Check in default database
+    local MySQL_Query = 'SELECT ' .. ownerColumn .. ' FROM ' .. Config.DefaultDatabase .. ' WHERE plate = ?'
+    local result = MySQL.query.await(MySQL_Query, {trimmedPlate})
+
+    if result and result[1] then
+        local vehicleOwner = result[1][ownerColumn]
+        if vehicleOwner and vehicleOwner == playerJob.name then
+            return true
+        end
+    end
+
+    -- Check in additional databases
+    for database, value in pairs(Config.Databases) do
+        local dbOwnerColumn = value.ownerColumn or ownerColumn
+        local MySQL_Query = 'SELECT ' .. dbOwnerColumn .. ' FROM ' .. database .. ' WHERE plate = ?'
+        local result = MySQL.query.await(MySQL_Query, {trimmedPlate})
+
+        if result and result[1] then
+            local vehicleOwner = result[1][dbOwnerColumn]
+            if vehicleOwner and vehicleOwner == playerJob.name then
+                return true
+            end
+        end
+    end
+
+    return false
+end)
+
 ESX.RegisterServerCallback('mx_carkeys:callback:getVehicles', function(src, cb)
     local vehicles = {}
     local xPlayer = ESX.GetPlayerFromId(src)
